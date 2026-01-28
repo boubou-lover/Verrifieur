@@ -1,37 +1,42 @@
-const CACHE_NAME = "cache-verreifieur-v0.8";
+const CACHE_NAME = "verrifieur-v1.0.0";
+
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/icon-192x192.png",
-  // ajoute ici si tu as d'autres ressources statiques à cacher
+  "/css/style.css",
+  "/js/app.js",
+  "/manifest.json",
+  "/logo192.png",
+  "/logo512.png"
 ];
 
-self.addEventListener("install", (event) => {
+// Installation
+self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(URLS_TO_CACHE))
+      .then(cache => cache.addAll(URLS_TO_CACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener("activate", (event) => {
+// Activation (nettoyage anciens caches)
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) =>
-        Promise.all(
-          cacheNames.filter(name => name !== CACHE_NAME)
-            .map(name => caches.delete(name))
-        )
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
       )
-      .then(() => self.clients.claim())
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("fetch", (event) => {
+// Fetch (offline-first)
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request)
-      .then((resp) => {
-        return resp || fetch(event.request);
-      })
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
   );
 });
