@@ -1,115 +1,179 @@
-// Récupération des éléments DOM
-const prix2 = document.getElementById("prix2");
-const prix4 = document.getElementById("prix4");
-const caution = document.getElementById("caution");
-
-const prix2E = document.getElementById("prix2E");
-const prix4E = document.getElementById("prix4E");
-const cautionBubble = document.getElementById("cautionBubble");
-
-const nombreBoissons2E = document.getElementById("nombreBoissons2E");
-const nombreBoissons4E = document.getElementById("nombreBoissons4E");
-const nombreEauPlate = document.getElementById("nombreEauPlate");
-const nombreGobeletsRendus = document.getElementById("nombreGobeletsRendus");
-
-const resultat = document.getElementById("resultat");
-const rendMonnaie = document.getElementById("rendMonnaie");
-const montantDonne = document.getElementById("montantDonne");
-const renduMonnaie = document.getElementById("renduMonnaie");
-
-const parametres = document.getElementById("parametres");
-
-let soldeDu = 0;
-let paramsLocked = true;
-
-/* PARAMÈTRES */
-function sauvegarderParametres() {
-  localStorage.setItem("verrifieur-parametres", JSON.stringify({
-    prix2: prix2.value,
-    prix4: prix4.value,
-    caution: caution.value
-  }));
-}
-
-function chargerParametres() {
-  const data = JSON.parse(localStorage.getItem("verrifieur-parametres"));
-  if (!data) return;
-  prix2.value = data.prix2;
-  prix4.value = data.prix4;
-  caution.value = data.caution;
-  majAffichagePrix();
-}
-
-function majAffichagePrix() {
-  prix2E.textContent = (+prix2.value).toFixed(2);
-  prix4E.textContent = (+prix4.value).toFixed(2);
-  cautionBubble.textContent = "Caution : " + (+caution.value).toFixed(2) + " €";
-}
-
-function toggleLock() {
-  if (paramsLocked) {
-    if (prompt("Code ?") !== "1234") return;
-  }
-  paramsLocked = !paramsLocked;
-  parametres.style.display = paramsLocked ? "none" : "block";
-}
-
-/* CALCUL */
-function calculerSolde() {
-  const totalBoissons =
-    nombreBoissons2E.value * prix2.value +
-    nombreBoissons4E.value * prix4.value;
-
-  const totalCaution =
-    ( +nombreBoissons2E.value +
-      +nombreBoissons4E.value +
-      +nombreEauPlate.value ) * caution.value;
-
-  const rendu = nombreGobeletsRendus.value * caution.value;
-
-  soldeDu = totalBoissons + totalCaution - rendu;
-
-  resultat.className = "result-box";
-
-  if (soldeDu > 0) {
-    resultat.textContent = `Client doit ${soldeDu.toFixed(2)} €`;
-    resultat.classList.add("result-ok");
-    rendMonnaie.style.display = "block";
-  } else if (soldeDu < 0) {
-    resultat.textContent = `À rendre ${(-soldeDu).toFixed(2)} €`;
-    resultat.classList.add("result-warn");
-    rendMonnaie.style.display = "none";
-  } else {
-    resultat.textContent = "Solde nul";
-    resultat.classList.add("result-neutral");
-    rendMonnaie.style.display = "none";
-  }
-}
-
-function calculerRenduMonnaie() {
-  const diff = montantDonne.value - soldeDu;
-  renduMonnaie.textContent =
-    diff > 0 ? `Rendre ${diff.toFixed(2)} €` :
-    diff < 0 ? `Manque ${(-diff).toFixed(2)} €` :
-    "Montant exact ✓";
-}
-
-function nouveauClient() {
-  document.querySelectorAll("input[type=number]").forEach(i => i.value = 0);
-  resultat.textContent = "";
-  rendMonnaie.style.display = "none";
-}
-
-function resetForm() {
-  localStorage.removeItem("verrifieur-parametres");
-  location.reload();
-}
-
-/* INIT */
-prix2.oninput = prix4.oninput = caution.oninput = () => {
-  majAffichagePrix();
-  sauvegarderParametres();
+// Configuration par défaut
+const DEFAULT_CONFIG = {
+  caution: 2.00,
+  prix2: 2.00,
+  prix4: 4.00
 };
 
-chargerParametres();
-majAffichagePrix();
+// Variable globale pour stocker le solde dû
+let soldeDu = 0;
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', () => {
+  // Charger les prix depuis localStorage ou utiliser les valeurs par défaut
+  loadConfig();
+  
+  // Initialiser l'affichage des prix
+  majAffichagePrix();
+  
+  // Enregistrer le service worker pour PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .catch(err => console.log('SW registration failed:', err));
+  }
+});
+
+// Charger la configuration
+function loadConfig() {
+  const saved = localStorage.getItem('verrifieur-config');
+  if (saved) {
+    const config = JSON.parse(saved);
+    document.getElementById('prix2').value = config.prix2 || DEFAULT_CONFIG.prix2;
+    document.getElementById('prix4').value = config.prix4 || DEFAULT_CONFIG.prix4;
+    document.getElementById('caution').value = config.caution || DEFAULT_CONFIG.caution;
+  } else {
+    document.getElementById('prix2').value = DEFAULT_CONFIG.prix2;
+    document.getElementById('prix4').value = DEFAULT_CONFIG.prix4;
+    document.getElementById('caution').value = DEFAULT_CONFIG.caution;
+  }
+}
+
+// Sauvegarder la configuration
+function saveConfig() {
+  const config = {
+    prix2: parseFloat(document.getElementById('prix2').value),
+    prix4: parseFloat(document.getElementById('prix4').value),
+    caution: parseFloat(document.getElementById('caution').value)
+  };
+  localStorage.setItem('verrifieur-config', JSON.stringify(config));
+}
+
+// Mettre à jour l'affichage des prix
+function majAffichagePrix() {
+  const prix2 = parseFloat(document.getElementById('prix2').value) || 0;
+  const prix4 = parseFloat(document.getElementById('prix4').value) || 0;
+  const caution = parseFloat(document.getElementById('caution').value) || 0;
+
+  document.getElementById('prix2E').textContent = prix2.toFixed(2);
+  document.getElementById('prix4E').textContent = prix4.toFixed(2);
+  document.getElementById('cautionBubble').textContent = 'Caution : ' + caution.toFixed(2) + ' €';
+  
+  saveConfig();
+}
+
+// Écouter les changements de prix
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('prix2').addEventListener('input', majAffichagePrix);
+  document.getElementById('prix4').addEventListener('input', majAffichagePrix);
+  document.getElementById('caution').addEventListener('input', majAffichagePrix);
+});
+
+// Toggle paramètres
+function toggleParametres() {
+  const params = document.getElementById('parametres');
+  const isVisible = params.style.display === 'block';
+  params.style.display = isVisible ? 'none' : 'block';
+}
+
+// Calculer le solde
+function calculerSolde() {
+  const nbGobeletsRendus = parseInt(document.getElementById('nombreGobeletsRendus').value) || 0;
+  const nbBoissons2E = parseInt(document.getElementById('nombreBoissons2E').value) || 0;
+  const nbBoissons4E = parseInt(document.getElementById('nombreBoissons4E').value) || 0;
+  const nbEauPlate = parseInt(document.getElementById('nombreEauPlate').value) || 0;
+
+  const prix2 = parseFloat(document.getElementById('prix2').value) || 0;
+  const prix4 = parseFloat(document.getElementById('prix4').value) || 0;
+  const caution = parseFloat(document.getElementById('caution').value) || 0;
+
+  // Calcul total boissons
+  const totalBoissons = (nbBoissons2E * prix2) + (nbBoissons4E * prix4);
+
+  // Total caution due
+  const totalCautionDue = caution * (nbBoissons2E + nbBoissons4E + nbEauPlate);
+
+  // Remboursement caution
+  const cautionRendue = caution * nbGobeletsRendus;
+
+  // Solde final
+  const solde = totalBoissons + totalCautionDue - cautionRendue;
+
+  // Stocker le solde
+  soldeDu = solde;
+
+  // Affichage
+  const resultat = document.getElementById('resultat');
+  let texte, classe;
+
+  if (solde > 0.001) {
+    texte = "Le client doit : " + solde.toFixed(2) + " €";
+    classe = "result-ok";
+    document.getElementById('rendMonnaie').style.display = 'block';
+    document.getElementById('montantDonne').value = '0';
+    document.getElementById('renduMonnaie').textContent = '';
+  } else if (solde < -0.001) {
+    texte = "À rendre au client : " + (-solde).toFixed(2) + " €";
+    classe = "result-warn";
+    document.getElementById('rendMonnaie').style.display = 'none';
+  } else {
+    texte = "Solde nul";
+    classe = "result-neutral";
+    document.getElementById('rendMonnaie').style.display = 'none';
+  }
+
+  resultat.textContent = texte;
+  resultat.className = "result-box " + classe;
+}
+
+// Calculer le rendu de monnaie
+function calculerRenduMonnaie() {
+  const montantDonne = parseFloat(document.getElementById('montantDonne').value) || 0;
+  const renduMonnaie = document.getElementById('renduMonnaie');
+
+  if (montantDonne === 0) {
+    renduMonnaie.textContent = '';
+    return;
+  }
+
+  const difference = montantDonne - soldeDu;
+
+  if (difference > 0.001) {
+    renduMonnaie.textContent = "À rendre : " + difference.toFixed(2) + " €";
+    renduMonnaie.style.color = "#ffa500";
+  } else if (difference < -0.001) {
+    renduMonnaie.textContent = "Manque : " + (-difference).toFixed(2) + " €";
+    renduMonnaie.style.color = "#f44";
+  } else {
+    renduMonnaie.textContent = "Montant exact ✓";
+    renduMonnaie.style.color = "#4caf50";
+  }
+}
+
+// Nouveau client (reset uniquement les quantités)
+function nouveauClient() {
+  document.getElementById('nombreGobeletsRendus').value = '0';
+  document.getElementById('nombreBoissons2E').value = '0';
+  document.getElementById('nombreBoissons4E').value = '0';
+  document.getElementById('nombreEauPlate').value = '0';
+
+  const resultat = document.getElementById('resultat');
+  resultat.textContent = '';
+  resultat.className = 'result-box';
+
+  document.getElementById('rendMonnaie').style.display = 'none';
+  document.getElementById('montantDonne').value = '0';
+  document.getElementById('renduMonnaie').textContent = '';
+
+  soldeDu = 0;
+}
+
+// Reset complet (quantités + prix par défaut)
+function resetForm() {
+  nouveauClient();
+  
+  document.getElementById('prix2').value = DEFAULT_CONFIG.prix2.toFixed(2);
+  document.getElementById('prix4').value = DEFAULT_CONFIG.prix4.toFixed(2);
+  document.getElementById('caution').value = DEFAULT_CONFIG.caution.toFixed(2);
+
+  majAffichagePrix();
+}

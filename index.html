@@ -26,49 +26,61 @@
 
   <div class="form-group">
     <label>Gobelets rendus :</label>
-    <input type="number" id="nombreGobeletsRendus" value="0">
+    <input type="number" id="nombreGobeletsRendus" value="0" min="0">
   </div>
 
   <div class="form-group">
-    <label>Bières & Softs (<span id="prix2E"></span> €) :</label>
-    <input type="number" id="nombreBoissons2E" value="0">
+    <label>Bières & Softs (<span id="prix2E">2.00</span> €) :</label>
+    <input type="number" id="nombreBoissons2E" value="0" min="0">
   </div>
 
   <div class="form-group">
-    <label>Bières spéciales (<span id="prix4E"></span> €) :</label>
-    <input type="number" id="nombreBoissons4E" value="0">
+    <label>Bières spéciales (<span id="prix4E">4.00</span> €) :</label>
+    <input type="number" id="nombreBoissons4E" value="0" min="0">
   </div>
 
   <div class="form-group">
     <label>Eau plate (gratuite) :</label>
-    <input type="number" id="nombreEauPlate" value="0">
+    <input type="number" id="nombreEauPlate" value="0" min="0">
   </div>
 
   <div class="buttons">
-    <button class="btn-calc" onclick="calculerSolde()">Calculer</button>
-    <button class="btn-reset" onclick="nouveauClient()">Nouveau client</button>
-    <button class="btn-reset" onclick="resetForm()">RESET</button>
+    <button class="btn-calc" onclick="calculerSolde()">💰 Calculer</button>
+    <button class="btn-reset" onclick="nouveauClient()">🔄 Nouveau</button>
   </div>
 
   <div id="resultat" class="result-box"></div>
 
   <div id="rendMonnaie">
-    <h3>💰 Calculatrice rapide</h3>
-    <input type="number" id="montantDonne" value="0" oninput="calculerRenduMonnaie()">
+    <h3>💵 Calculatrice rapide</h3>
+    <div class="form-group">
+      <label>Client donne :</label>
+      <input type="number" id="montantDonne" value="0" min="0" step="0.01" oninput="calculerRenduMonnaie()">
+    </div>
     <p id="renduMonnaie"></p>
   </div>
 
-  <button class="lock-btn" onclick="toggleLock()">🔒 Paramètres</button>
+  <button class="settings-btn" onclick="toggleParametres()">⚙️ Paramètres</button>
 
   <div id="parametres">
-    <h3>Paramètres</h3>
-    <label>Prix softs <input type="number" id="prix2"></label>
-    <label>Prix spéciales <input type="number" id="prix4"></label>
-    <label>Caution <input type="number" id="caution"></label>
+    <h3>⚙️ Configuration des prix</h3>
+    <div class="form-group">
+      <label>Prix softs :</label>
+      <input type="number" id="prix2" value="2.00" step="0.01" min="0">
+    </div>
+    <div class="form-group">
+      <label>Prix spéciales :</label>
+      <input type="number" id="prix4" value="4.00" step="0.01" min="0">
+    </div>
+    <div class="form-group">
+      <label>Caution :</label>
+      <input type="number" id="caution" value="2.00" step="0.01" min="0">
+    </div>
+    <button class="btn-reset" onclick="resetForm()" style="width: 100%; margin-top: 10px;">🔄 Réinitialiser tout</button>
   </div>
 </div>
 
-<footer>Version 1.0 – Verre’ifieur</footer>
+<footer>Version 1.1 — Verre'ifieur</footer>
 
 </body>
 </html>
