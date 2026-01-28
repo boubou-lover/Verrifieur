@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Verre’ifieur</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    margin: 0; padding: 20px;
+    display: flex; flex-direction: column; align-items: center;
+    font-size: 17px;
+  }
+  .logo {
+    width: 100%;
+    max-width: 250px;
+    margin-bottom: 20px;
+  }
+  .calculator-container {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+  }
+  .caution-bubble {
+    position: absolute;
+    top: -10px; right: -10px;
+    background-color: #ffa500;
+    color: #000;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 0 5px rgba(255,165,0,0.8);
+  }
+  .rainbow-title {
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    text-align: center;
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #bbbbba;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+  }
+  h3 {
+    text-align: center;
+  }
+  .form-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+  }
+  .form-group label {
+    flex: 1;
+    text-align: left;
+    margin-right: 10px;
+  }
+  .form-group input[type=number] {
+    width: 100px;
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #444;
+    color: #fff;
+  }
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    flex: 1;
+    margin: 5px;
+    transition: transform 0.15s ease-in-out;
+  }
+  button:active {
+    transform: scale(0.95);
+  }
+  .btn-calc {
+    background-color: #4CAF50;
+    color: white;
+  }
+  .btn-reset {
+    background-color: #777;
+    color: white;
+  }
+  #resultat {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  #parametres {
+    margin-top: 20px;
+    background-color: #222;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+  }
+  #parametres h3 {
+    margin-top: 0;
+  }
+  #parametres .form-group {
+    margin-bottom: 12px;
+  }
+  #parametres input[type=number] {
+    width: 100px;
+  }
+  .settings-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #222;
+    border-radius: 50%;
+    padding: 6px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  }
+  .settings-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: orange;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  footer {
+    margin-top: 30px;
+    color: #aaa;
+    font-size: 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<img src="https://menubois.pq.lu/LOGO-FOND-NOIR.jpg" alt="Logo Comité des fêtes Juseret" class="logo" />
+
+<div class="calculator-container">
+  <div class="caution-bubble" id="cautionBubble">Caution : 2.00 €</div>
+  <h1 class="rainbow-title">Verre’ifieur</h1>
+
+  <div class="form-group">
+    <label for="nombreGobeletsRendus">Gobelets rendus :</label>
+    <input type="number" id="nombreGobeletsRendus" min="0" value="0" onfocus="clearZero(this)" onblur="resetToZero(this)" />
+  </div>
+
+  <div class="form-group">
+    <label for="nombreBoissons2E">Bières & Softs (<span id="prix2E">2.00</span> €) :</label>
+    <input type="number" id="nombreBoissons2E" min="0" value="0" onfocus="clearZero(this)" onblur="resetToZero(this)" />
+  </div>
+
+  <div class="form-group">
+    <label for="nombreBoissons4E">Bières Spéciales (<span id="prix4E">4.00</span> €) :</label>
+    <input type="number" id="nombreBoissons4E" min="0" value="0" onfocus="clearZero(this)" onblur="resetToZero(this)" />
+  </div>
+
+  <div class="form-group">
+    <label for="nombreEauPlate">Eau plate (gratuite) :</label>
+    <input type="number" id="nombreEauPlate" min="0" value="0" onfocus="clearZero(this)" onblur="resetToZero(this)" />
+  </div>
+
+  <div class="buttons">
+    <button class="btn-calc" onclick="calculerSolde()">Calculer</button>
+    <button class="btn-reset" onclick="resetForm()">RESET</button>
+  </div>
+
+  <p id="resultat"></p>
+
+  <!-- Icône paramètres -->
+  <div class="settings-icon" onclick="toggleParametres()" title="Paramètres">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 8.6 15a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 15.4 9a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 15z" />
+    </svg>
+  </div>
+
+  <div id="parametres">
+    <h3>Modifier les prix en €</h3>
+    <div class="form-group">
+      <label for="prix2">Prix des softs :</label>
+      <input type="number" id="prix2" value="2.00" step="0.01" min="0" />
+    </div>
+    <div class="form-group">
+      <label for="prix4">Prix des bières spéciales :</label>
+      <input type="number" id="prix4" value="4.00" step="0.01" min="0" />
+    </div>
+    <div class="form-group">
+      <label for="caution">Montant de la caution :</label>
+      <input type="number" id="caution" value="2.00" step="0.01" min="0" />
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  Cache #001 – Version du 9 août 2025
+</footer>
+
+<script>
+  // Pour vider un champ si 0 au focus
+  function clearZero(input) {
+    if (input.value === '0') input.value = '';
+  }
+  // Remet à 0 si vide au blur
+  function resetToZero(input) {
+    if (input.value === '') input.value = '0';
+  }
+
+  // Affiche/masque paramètres
+  function toggleParametres() {
+    const params = document.getElementById('parametres');
+    params.style.display = params.style.display === 'block' ? 'none' : 'block';
+  }
+
+  // Met à jour les prix dans le formulaire quand on modifie paramètres
+  function majAffichagePrix() {
+    const prix2 = parseFloat(document.getElementById('prix2').value) || 0;
+    const prix4 = parseFloat(document.getElementById('prix4').value) || 0;
+    const caution = parseFloat(document.getElementById('caution').value) || 0;
+
+    document.getElementById('prix2E').textContent = prix2.toFixed(2);
+    document.getElementById('prix4E').textContent = prix4.toFixed(2);
+    document.getElementById('cautionBubble').textContent = 'Caution : ' + caution.toFixed(2) + ' €';
+  }
+
+  // Écoute les changements dans les inputs paramètres
+  document.getElementById('prix2').addEventListener('input', majAffichagePrix);
+  document.getElementById('prix4').addEventListener('input', majAffichagePrix);
+  document.getElementById('caution').addEventListener('input', majAffichagePrix);
+
+  // Initialisation affichage prix
+  majAffichagePrix();
+
+  // Fonction calcul du solde
+  function calculerSolde() {
+    const nbGobeletsRendus = parseInt(document.getElementById('nombreGobeletsRendus').value) || 0;
+    const nbBoissons2E = parseInt(document.getElementById('nombreBoissons2E').value) || 0;
+    const nbBoissons4E = parseInt(document.getElementById('nombreBoissons4E').value) || 0;
+    const nbEauPlate = parseInt(document.getElementById('nombreEauPlate').value) || 0;
+
+    const prix2 = parseFloat(document.getElementById('prix2').value) || 0;
+    const prix4 = parseFloat(document.getElementById('prix4').value) || 0;
+    const caution = parseFloat(document.getElementById('caution').value) || 0;
+
+    // Calcul total boissons (eau plate gratuite donc 0€)
+    const totalBoissons = (nbBoissons2E * prix2) + (nbBoissons4E * prix4) + 0; // Eau gratuite
+
+    // Total caution à payer = caution * total boissons + caution * eau plate (car gobelets cautionnés)
+    // Donc total caution = caution * (nbBoissons2E + nbBoissons4E + nbEauPlate)
+    const totalCautionDue = caution * (nbBoissons2E + nbBoissons4E + nbEauPlate);
+
+    // Remboursement caution = caution * nb gobelets rendus
+    const cautionRendue = caution * nbGobeletsRendus;
+
+    // Solde = total boissons + caution due - caution remboursée
+    const solde = totalBoissons + totalCautionDue - cautionRendue;
+
+    // Affichage avec code couleur
+    const resultat = document.getElementById('resultat');
+    let texte, couleur;
+
+    if (solde > 0.001) { // client doit de l'argent
+      texte = "Le client doit : " + solde.toFixed(2) + " €";
+      couleur = "#0f0"; // vert
+    } else if (solde < -0.001) { // on doit rendre de l'argent
+      texte = "Il faut rendre : " + (-solde).toFixed(2) + " €";
+      couleur = "orange";
+    } else {
+      texte = "Solde nul";
+      couleur = "#fff";
+    }
+
+    resultat.textContent = texte;
+    resultat.style.color = couleur;
+  }
+
+  // Reset du formulaire
+  function resetForm() {
+    document.getElementById('nombreGobeletsRendus').value = '0';
+    document.getElementById('nombreBoissons2E').value = '0';
+    document.getElementById('nombreBoissons4E').value = '0';
+    document.getElementById('nombreEauPlate').value = '0';
+
+    // Remise à jour prix & caution aux valeurs initiales
+    document.getElementById('prix2').value = '2.00';
+    document.getElementById('prix4').value = '4.00';
+    document.getElementById('caution').value = '2.00';
+
+    majAffichagePrix();
+
+    // Effacer résultat
+    const resultat = document.getElementById('resultat');
+    resultat.textContent = '';
+    resultat.style.color = '#fff';
+  }
+</script>
+
+</body>
+</html>
