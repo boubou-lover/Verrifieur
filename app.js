@@ -108,6 +108,13 @@ function toggleParametres() {
   params.style.display = isVisible ? 'none' : 'block';
 }
 
+// Fonction de vibration
+function vibrate(pattern) {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(pattern);
+  }
+}
+
 // Calculer le solde
 function calculerSolde() {
   const nbGobeletsRendus = parseInt(document.getElementById('nombreGobeletsRendus').value) || 0;
@@ -133,6 +140,9 @@ function calculerSolde() {
 
   // Stocker le solde
   soldeDu = solde;
+
+  // Vibration au calcul
+  vibrate(50);
 
   // Affichage
   const resultat = document.getElementById('resultat');
@@ -184,12 +194,16 @@ function calculerRenduMonnaie() {
 
 // Définir un montant rapide
 function setMontant(montant) {
+  vibrate(30);
   document.getElementById('montantDonne').value = montant;
   calculerRenduMonnaie();
 }
 
 // Nouveau client (reset uniquement les quantités)
 function nouveauClient() {
+  // Vibration au reset
+  vibrate(30);
+  
   document.getElementById('nombreGobeletsRendus').value = '0';
   document.getElementById('nombreBoissons2E').value = '0';
   document.getElementById('nombreBoissons4E').value = '0';
